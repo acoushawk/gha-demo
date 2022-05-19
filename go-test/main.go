@@ -1,7 +1,9 @@
 package main
 
-import "fmt"
+import "os"
 
 func main() {
-	fmt.Println("Hello World")
+	d1 := []byte("hello\nworld\n")
+	_ = os.WriteFile("output.text", d1, 0644)
+
 }

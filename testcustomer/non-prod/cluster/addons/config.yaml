@@ -1,0 +1,7 @@
+cluster_name: "lw-testcustomer-non-prod"
+cluster_type: "non-prod"
+region: "us-east1"
+project_id: "managed-fusion-dev"
+repo_name: "testcustomer-config"
+argocd_host: "testcustomer-non-prod-argocd.b.lucidworks.cloud"
+argocd_host_tls_name: "testcustomer-non-prod-argocd-b-lucidworks-cloud"

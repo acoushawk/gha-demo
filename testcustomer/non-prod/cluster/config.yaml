@@ -1,0 +1,63 @@
+name: "lw-testcustomer-non-prod"
+region: "us-east1"
+project_id: "managed-fusion-dev"
+cluster_labels:
+  customer: "testcustomer"
+  environment: "non-prod"
+node_pools:
+  - name: default
+    machine_type: c2-standard-4
+    min_count: 1
+    max_count: 3
+    node_metadata: GKE_METADATA_SERVER
+    preemptible: true
+    node_locations: "us-east1-a,us-east1-b"
+  - name: infra
+    machine_type: c2-standard-4
+    min_count: 1
+    max_count: 2
+    node_metadata: EXPOSE
+    preemptible: true
+    node_locations: "us-east1-a,us-east1-b"
+  - name: dev
+    machine_type: c2-standard-4
+    min_count: 1
+    max_count: 2
+    node_metadata: EXPOSE
+    preemptible: true
+    node_locations: "us-east1-a,us-east1-b"
+  # - name: stg-analytics
+  #   machine_type: c2-standard-4
+  #   min_count: 1
+  #   max_count: 2
+  #   node_metadata: EXPOSE
+  #   preemptible: true
+  #   node_locations: "us-east1-a,us-east1-b"
+  # - name: stg-query
+  #   machine_type: c2-standard-4
+  #   min_count: 1
+  #   max_count: 2
+  #   node_metadata: EXPOSE
+  #   preemptible: true
+  #   node_locations: "us-east1-a,us-east1-b"
+  # - name: stg-search
+  #   machine_type: c2-standard-4
+  #   min_count: 1
+  #   max_count: 2
+  #   node_metadata: EXPOSE
+  #   preemptible: true
+  #   node_locations: "us-east1-a,us-east1-b"
+  # - name: stg-system
+  #   machine_type: c2-standard-4
+  #   min_count: 1
+  #   max_count: 2
+  #   node_metadata: EXPOSE
+  #   preemptible: true
+  #   node_locations: "us-east1-a,us-east1-b"
+  - name: spark-only
+    machine_type: c2-standard-4
+    min_count: 0
+    max_count: 2
+    node_metadata: EXPOSE
+    preemptible: true
+    node_locations: "us-east1-a,us-east1-b"

@@ -3,18 +3,22 @@ name: Deploy Cluster
 on:
   workflow_dispatch:
     inputs:
-      backup_from:
+      customer:
         description: 'Customer Name'
         required: true
         type: string
-      restore_to:
+      cluster_type:
         description: 'Cluster Type'
         required: true
         options:
         - non-prod
         - prod
-        default: 'test'
+        default: 'non-prod'
         type: choice
+      pr_message:
+        description: 'PR description'
+        required: true
+        type: string
 
 
 defaults:
@@ -34,3 +38,8 @@ jobs:
     
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v4
+        with:
+          commit-message: ${{ github.event.inputs.pr_message }}
+          branch: ${{ github.event.inputs.customer}}/$${{ github.event.inputs.cluster_type }}
+          delete-branch: true
+          

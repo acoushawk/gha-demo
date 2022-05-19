@@ -1,0 +1,30 @@
+name: Restore databases
+
+on:
+  workflow_dispatch:
+    inputs:
+      backup_from:
+        description: 'Customer Name'
+        required: true
+        type: string
+      restore_to:
+        description: 'Cluster Type'
+        required: true
+        options:
+        - non-prod
+        - prod
+        default: 'test'
+        type: choice
+
+
+defaults:
+  run:
+    working-directory: go-test
+
+steps:
+  - uses: actions/checkout@v3
+  - uses: actions/setup-go@v3
+    with:
+      go-version: '^1.13.1' # The Go version to download (if necessary) and use.
+  - run: go run main.go
+  

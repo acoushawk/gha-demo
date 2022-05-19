@@ -1,0 +1,16 @@
+groups:
+  - name: nodes.errors
+    rules:
+      - alert: NodeNotReadyState
+        expr: kube_node_status_condition{condition="Ready",status="true"} == 0
+        for: 4h
+        labels:
+          severity: s2
+          env: '{{ $labels.kubernetes_namespace }}'
+          pod: '{{ $labels.kubernetes_pod_name }}'
+          customer: '[[.CustomerName]]'
+          cluster: '[[.ClusterName]]'
+          node: '{{ $labels.node }}'
+        annotations:
+          description: 'Customer: [[.CustomerName]] Env: {{ $labels.namespace }} Node: {{ $labels.node }} its being in Not Ready state for too long'
+          summary: '[[.CustomerName]] {{ $labels.node }} its being on Not Rady state for more than 4 hrs'

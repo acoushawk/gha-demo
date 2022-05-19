@@ -1,0 +1,12 @@
+groups:
+  - name: node.ram
+    rules:
+    - alert: LowFreeMem
+      expr: (1 - node_memory_MemFree_bytes/node_memory_MemTotal_bytes) > 0.8
+      for: 2m
+      labels:
+        severity: s1
+        env: '{{ $labels.kubernetes_namespace }}'
+      annotations:
+        description: 'Customer: [[.CustomerName]] Env: {{ $labels.kubernetes_namespace }} Node: {{ $labels.kubernetes_node }} free RAM is below 20% (current value is {{ humanize $value}}%)'
+        summary: '[[.CustomerName]] {{ $labels.kubernetes_namespace }}: Low RAM availability'

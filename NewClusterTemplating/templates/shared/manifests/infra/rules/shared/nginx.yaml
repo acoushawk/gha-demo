@@ -1,0 +1,67 @@
+groups:
+  - name: nginx.latency
+    rules:
+      - alert: NginxLatencyHigh
+        expr: histogram_quantile(0.95, sum by (le, host, namespace, method, ingress, status) (rate(nginx_ingress_controller_request_duration_seconds_bucket{ingress!="", method="GET", status!~"[13][0-9][0-9]",  controller_pod=~".*",controller_class=~".*",controller_namespace=~".*",ingress=~".*-api-gateway.*"}[1m])))>1
+        for: 5m
+        labels:
+          severity: s2
+          env: '{{ $labels.namespace }}'
+          customer: '[[.CustomerName]]'
+          cluster: '[[.ClusterName]]'
+          host: '{{ $labels.host }}'
+        annotations:
+          summary: "[[.CustomerName]] [[.ClusterName]] Nginx latency high"
+          description: "Customer: [[.CustomerName]] Nginx p95 latency is higher than 1 seconds\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+  - name: nginx.post.latency
+    rules:
+      - alert: NginxPOSTLatencyHigh
+        expr: histogram_quantile(0.95, sum by (le, host, namespace, method, ingress, status) (rate(nginx_ingress_controller_request_duration_seconds_bucket{ingress!="", method="POST", status!~"[13][0-9][0-9]",  controller_pod=~".*",controller_class=~".*",controller_namespace=~".*",ingress=~".*-api-gateway.*"}[1m])))>1
+        for: 5m
+        labels:
+          severity: s3
+          env: '{{ $labels.namespace }}'
+          customer: '[[.CustomerName]]'
+          cluster: '[[.ClusterName]]'
+          host: '{{ $labels.host }}'
+        annotations:
+          summary: "[[.CustomerName]] [[.ClusterName]] Nginx latency high"
+          description: "Customer: [[.CustomerName]] Nginx p95 latency is higher than 1 seconds\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+  - name: nginx.ssl
+    rules:
+      - alert: NginxSSLCertExpired
+        expr: ((avg(nginx_ingress_controller_ssl_expire_time_seconds{kubernetes_pod_name=~".*",namespace=~".*",host!="_"}) by (host)) - time()) < 0
+        for: 5m
+        labels:
+          severity: s1
+          env: '{{ $labels.kubernetes_namespace }}'
+          customer: '[[.CustomerName]]'
+          cluster: '[[.ClusterName]]'
+          host: '{{ $labels.host }}'
+        annotations:
+          summary: "Customer:[[.CustomerName]] cluster:[[.ClusterName]] SSL Certificate is expired"
+          description: "Customer: [[.CustomerName]] SSL Certificate is expired"
+      - alert: NginxSSLCertExpiration2Weeks
+        expr: ((avg(nginx_ingress_controller_ssl_expire_time_seconds{kubernetes_pod_name=~".*",namespace=~".*",host!="_",host!~".*argocd.*"}) by (host)) - time()) < 86400 * 15
+        for: 5m
+        labels:
+          severity: s1
+          env: '{{ $labels.kubernetes_namespace }}'
+          customer: '[[.CustomerName]]'
+          cluster: '[[.ClusterName]]'
+          host: '{{ $labels.host }}'
+        annotations:
+          summary: "Customer:[[.CustomerName]] cluster:[[.ClusterName]] SSL Certificate expiration in less than 2 weeks"
+          description: "Customer: [[.CustomerName]] SSL Certificate is about to expire in less than 2 weeks"
+      - alert: NginxSSLCertExpiration8Weeks
+        expr: ((avg(nginx_ingress_controller_ssl_expire_time_seconds{kubernetes_pod_name=~".*",namespace=~".*",host!="_",host!~".*argocd.*"}) by (host)) - time()) < 86400 * 56
+        for: 5m
+        labels:
+          severity: s2
+          env: '{{ $labels.kubernetes_namespace }}'
+          customer: '[[.CustomerName]]'
+          cluster: '[[.ClusterName]]'
+          host: '{{ $labels.host }}'
+        annotations:
+          summary: "Customer:[[.CustomerName]] cluster:[[.ClusterName]] SSL Certificate expiration in less than 8 weeks"
+          description: "Customer: [[.CustomerName]] SSL Certificate is about to expire in less than 8 weeks"

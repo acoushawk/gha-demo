@@ -1,0 +1,27 @@
+groups:
+  - name: cpu.high
+    rules:
+      - alert: HighCPU
+        expr: sum(rate(container_cpu_usage_seconds_total{container_name!="solr",container_name!="executor",name=~".+",namespace!="infra"}[5m])) by (name,namespace,instance) * 100 > 90
+        for: 15m
+        labels:
+          severity: s1
+          env: '{{ $labels.namespace }}'
+          customer: '[[.CustomerName]]'
+          cluster: '[[.ClusterName]]'
+          object: '{{ $labels.name }}'
+        annotations:
+          description: 'Customer: [[.CustomerName]] Env: {{ $labels.namespace }} Pod: {{ $labels.name }} has CPU usage above 95% for over 5m (current value: {{ humanize $value}}%)'
+          summary: '[[.CustomerName]] {{ $labels.namespace }} CPU Usage is over 95%'
+      - alert: SolrHighCPU
+        expr: sum(rate(container_cpu_usage_seconds_total{container_name="solr",name=~".+",namespace!="infra"}[5m])) by (namespace,pod) * 100 > 85
+        for: 15m
+        labels:
+          severity: s1
+          env: '{{ $labels.namespace }}'
+          customer: '[[.CustomerName]]'
+          cluster: '[[.ClusterName]]'
+          object: '{{ $labels.name }}'
+        annotations:
+          description: 'Customer: [[.CustomerName]] Env: {{ $labels.namespace }} Pod: {{ $labels.name }} has CPU usage above 95% for over 5m (current value: {{ humanize $value}}%)'
+          summary: '[[.CustomerName]] {{ $labels.namespace }} CPU Usage is over 90'

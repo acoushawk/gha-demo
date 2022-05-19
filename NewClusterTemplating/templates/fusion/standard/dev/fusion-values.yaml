@@ -1,0 +1,218 @@
+fusion:  
+  global:
+    zkReplicaCount: 3
+
+  sql-service:
+    enabled: false
+    nodeSelector:
+      fusion_node_type: [[.Env]]
+    replicaCount: 0
+    service:
+      thrift:
+        type: "ClusterIP"
+
+  zookeeper:
+    nodeSelector:
+      fusion_node_type: [[.Env]]
+    replicaCount: 3
+    persistence:
+      size: 30Gi
+    env:
+      ZK_HEAP_SIZE: 1G
+      ZK_PURGE_INTERVAL: 2
+
+  ml-model-service:
+    enabled: false
+    image:
+      imagePullPolicy: "IfNotPresent"
+    nodeSelector:
+      fusion_node_type: [[.Env]]
+    modelRepoImpl: fusion
+    fs:
+      enabled: true
+    javaToolOptions: "-Dlogging.level.com.lucidworks.fusion.ml=INFO"
+    pod:
+      annotations:
+        fluentd.active: "true"
+    milvus:
+      nodeSelector:
+        fusion_node_type: [[.Env]]
+    ambassador:
+      nodeSelector:
+        fusion_node_type: [[.Env]]
+
+  fusion-admin:
+    nodeSelector:
+      fusion_node_type: [[.Env]]
+    readinessProbe:
+      initialDelaySeconds: 90
+
+  query-pipeline:
+    livenessProbe:
+      failureThreshold: 10
+      httpGet:
+        path: /actuator/health
+        port: jetty
+        scheme: HTTP
+      initialDelaySeconds: 45
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 3
+    readinessProbe:
+      failureThreshold: 6
+      httpGet:
+        path: /actuator/health
+        port: jetty
+        scheme: HTTP
+      initialDelaySeconds: 45
+      periodSeconds: 10
+      successThreshold: 1
+      timeoutSeconds: 2
+    nodeSelector:
+      fusion_node_type: [[.Env]]
+    replicaCount: 3
+    logstashEnabled: true
+    warmingQueryJson:
+      {
+        "pipelines": [],
+        "profiles": []
+      }
+    javaToolOptions: "-Xms5g -Xmx5g -Dserver.jetty.max-threads=2000 -Dcom.lucidworks.httpclient.defaultMaxPerRoute=2000 -Dcom.lucidworks.httpclient.maxTotalConnections=2000 -Dhttp.maxConnections=2000 -Dserver.jetty.thread-idle-timeout=120000 -Dserver.jetty.idle-timeout=120000 -Dmanagement.health.kubernetes.enabled=false -Dspring.cloud.kubernetes.discovery.catalogServicesWatchDelay=15000 -Dribbon.ServerListRefreshInterval=15000 -Djava.util.concurrent.ForkJoinPool.common.parallelism=1"
+    pod:
+      annotations:
+        prometheus.io/port: "8787"
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/actuator/prometheus"
+        fluentd.active: "true"
+
+  admin-ui:
+    nodeSelector:
+      fusion_node_type: [[.Env]]
+
+  api-gateway:
+    service:
+      type: "NodePort"
+      externalTrafficPolicy: "Local"
+    replicaCount: 2 
+    logstashEnabled: true
+    javaToolOptions: "-Xms4g -Xmx4g -Dsecurity.auth.password-cache-size=40 -Djwt.token.user-cache-size=40 -Dspring.cloud.kubernetes.discovery.catalogServicesWatchDelay=15000 -Dkubernetes.request.timeout=20000 -Dkubernetes.connection.timeout=15000 -Dmanagement.health.kubernetes.enabled=false -Dribbon.ServerListRefreshInterval=15000 -Dlogging.level.reactor.netty.http.server.AccessLog=INFO -Dreactor.netty.http.server.accessLogEnabled=true -Dlogging.config=classpath:logback-kube.xml -Daccesslog.enabled=true -Dhttp.maxConnections=1000"
+    nodeSelector:
+      fusion_node_type: [[.Env]]
+    pod:
+      annotations:
+        prometheus.io/port: "6764"
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/actuator/prometheus"
+        fluentd.active: "true"
+
+  auth-ui:
+    nodeSelector:
+      fusion_node_type: [[.Env]]
+
+  classic-rest-service:
+    nodeSelector:
+      fusion_node_type: [[.Env]]
+    volume:
+      storage: 50Gi
+    pod:
+      annotations:
+        fluentd.active: "true"
+
+  devops-ui:
+    nodeSelector:
+      fusion_node_type: [[.Env]]
+
+  fusion-resources:
+    nodeSelector:
+      fusion_node_type: [[.Env]]
+
+  insights:
+    nodeSelector:
+      fusion_node_type: [[.Env]]
+
+  job-launcher:
+    nodeSelector:
+      fusion_node_type: [[.Env]]
+    sparkNodeSelector:
+      fusion_node_type: spark-only
+    javaToolOptions: "-Dlog4j2.formatMsgNoLookups=true"
+
+  job-rest-server:
+    nodeSelector:
+      fusion_node_type: [[.Env]]
+    javaToolOptions: "-Dlog4j2.formatMsgNoLookups=true"
+
+  logstash:
+    elasticsearchHost: elasticsearch-master.infra.svc.cluster.local:9200
+    nodeSelector:
+      fusion_node_type: [[.Env]]
+
+  connectors:
+    nodeSelector:
+      fusion_node_type: [[.Env]]
+
+  connectors-backend:
+    nodeSelector:
+      fusion_node_type: [[.Env]]
+    pod:
+      annotations:
+        fluentd.active: "true"
+
+  rules-ui:
+    nodeSelector:
+      fusion_node_type: [[.Env]]
+
+  pm-ui:
+    enabled: false
+    nodeSelector:
+      fusion_node_type: [[.Env]]
+
+  webapps:
+    enabled: false
+    nodeSelector:
+      fusion_node_type: [[.Env]]
+
+  pulsar:
+    proxy:
+      enabled: false
+      javaToolOptions: "-Dlog4j2.formatMsgNoLookups=true"
+    broker:
+      nodeSelector:
+        fusion_node_type: [[.Env]]
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        fluentd.active: "true"
+      configData:
+        maxMessageSize: "20981760"
+    bookkeeper:
+      nodeSelector:
+        fusion_node_type: [[.Env]]
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+        fluentd.active: "true"
+      configData:
+        nettyMaxFrameSizeBytes: "20981760"
+        
+  fusion-jupyter:
+    enabled: false
+    nodeSelector:
+      fusion_node_type: [[.Env]]
+
+  connector-plugin:
+    nodeSelector:
+      fusion_node_type: [[.Env]]
+
+  argo:
+    server:
+      nodeSelector:
+        fusion_node_type: [[.Env]]
+
+  fusion-log-forwarder:
+    nodeSelector:
+      fusion_node_type: [[.Env]]
+
+  tikaserver:
+    nodeSelector:
+      fusion_node_type: [[.Env]]

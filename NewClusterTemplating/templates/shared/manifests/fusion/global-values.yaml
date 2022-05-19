@@ -1,0 +1,7 @@
+global:
+  customerName: "[[.CustomerName]]"
+  clusterName: "[[.ClusterName]]"
+  clusterType: "[[.ClusterType]]"
+  domain: "[[.Domain]]"
+  env: "[[.Env]]"
+  tlsName: "[[.Namespace]]-api-gateway-tls-secret"

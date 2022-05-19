@@ -1,0 +1,91 @@
+internal-grafana:
+  server:
+    service:
+      type: ClusterIP
+  ingress:
+    enabled: true
+    annotations:
+      kubernetes.io/ingress.class: nginx
+    [[if HasPrefix .ClusterType "non-prod" -]]
+    hosts: ["[[.CustomerName]]-[[.ClusterType]]-internal-dashboard.[[.Domain]]"]
+    [[- else -]]
+    hosts: ["[[.CustomerName]]-internal-dashboard.[[.Domain]]"]
+    [[- end]]
+    tls:
+      - secretName: "infra-tls-secret"
+        [[if HasPrefix .ClusterType "non-prod" -]]
+        hosts: ["[[.CustomerName]]-[[.ClusterType]]-internal-dashboard.[[.Domain]]"]
+        [[- else -]]
+        hosts: ["[[.CustomerName]]-internal-dashboard.[[.Domain]]"]
+        [[- end]]
+  nodeSelector:
+    fusion_node_type: infra
+  persistence:
+    enabled: true
+    type: pvc
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+      - name: Prometheus
+        type: prometheus
+        url: "http://{{ .Release.Name }}-trickster:8480"
+        access: proxy
+        editable: false
+        basicAuth: false
+        isDefault: true
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+      - name: 'default'
+        orgId: 1
+        folder: ''
+        type: file
+        disableDeletion: true
+        editable: false
+        options:
+          path: /var/lib/grafana/dashboards/default
+      - name: 'deployments'
+        orgId: 1
+        folder: ''
+        type: file
+        disableDeletion: true
+        editable: false
+        options:
+          path: /var/lib/grafana/dashboards/deployments
+  dashboards:
+    default:
+      dashboard_gateway_metrics:
+        url: https://raw.githubusercontent.com/lucidworks/fusion-cloud-native/master/monitoring/grafana/dashboard_gateway_metrics.json
+      dashboard_indexing_metrics:
+        url: https://raw.githubusercontent.com/lucidworks/fusion-cloud-native/master/monitoring/grafana/dashboard_indexing_metrics.json
+      dashboard_jvm_metrics:
+        url: https://raw.githubusercontent.com/lucidworks/fusion-cloud-native/master/monitoring/grafana/dashboard_jvm_metrics.json
+      dashboard_kube_node:
+        url: https://raw.githubusercontent.com/lucidworks/fusion-cloud-native/master/monitoring/grafana/dashboard_kube_node.json
+      dashboard_pvc_metrics:
+        url: https://raw.githubusercontent.com/lucidworks/fusion-cloud-native/master/monitoring/grafana/dashboard_pvc_metrics.json
+      dashboard_query_pipeline:
+        url: https://raw.githubusercontent.com/lucidworks/fusion-cloud-native/master/monitoring/grafana/dashboard_query_pipeline.json
+      dashboard_solr_core:
+        url: https://raw.githubusercontent.com/lucidworks/fusion-cloud-native/master/monitoring/grafana/dashboard_solr_core.json
+      dashboard_solr_node:
+        url: https://raw.githubusercontent.com/lucidworks/fusion-cloud-native/master/monitoring/grafana/dashboard_solr_node.json
+      dashboard_solr_system:
+        url: https://raw.githubusercontent.com/lucidworks/fusion-cloud-native/master/monitoring/grafana/dashboard_solr_system.json
+      kube_metrics:
+        url: https://raw.githubusercontent.com/lucidworks/fusion-cloud-native/master/monitoring/grafana/kube_metrics.json
+      pulsar_grafana_dashboard:
+        url: https://raw.githubusercontent.com/lucidworks/fusion-cloud-native/master/monitoring/grafana/pulsar_grafana_dashboard.json
+      nginx_dashboard:
+        url: https://raw.githubusercontent.com/lucidworks/managed-dashboards/master/nginx.json
+      nginx_dashboard_v2:
+        url: https://raw.githubusercontent.com/DevOps-Nirvana/Grafana-Dashboards/main/kubernetes-nginx-ingress-via-prometheus.json
+      nginx_request_handling_performance:
+        url: https://raw.githubusercontent.com/lucidworks/managed-dashboards/master/request-high-performance.json
+      prometheus-benchmark:
+        url: https://raw.githubusercontent.com/lucidworks/fusion-cloud-native/master/monitoring/grafana/dashboard-prometheus-benchmark.json
+    deployments:
+      argocd:
+        url: https://raw.githubusercontent.com/argoproj/argo-cd/master/examples/dashboard.json

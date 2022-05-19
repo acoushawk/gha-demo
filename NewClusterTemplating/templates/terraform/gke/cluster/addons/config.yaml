@@ -1,0 +1,12 @@
+cluster_name: "[[.ClusterName]]"
+cluster_type: "[[.ClusterType]]"
+region: "[[.Region]]"
+project_id: "[[.ProjectID]]"
+repo_name: "[[.CustomerName]]-config"
+[[if HasPrefix .ClusterType "non-prod" -]]
+argocd_host: "[[.CustomerName]]-[[.ClusterType]]-argocd.[[.Domain]]"
+argocd_host_tls_name: "[[.CustomerName]]-[[.ClusterType]]-argocd-[[ ReplaceAll .Domain "." "-" ]]"
+[[- else -]]
+argocd_host: "[[.CustomerName]]-argocd.[[.Domain]]"
+argocd_host_tls_name: "[[.CustomerName]]-argocd-[[ ReplaceAll .Domain "." "-" ]]"
+[[- end]]

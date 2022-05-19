@@ -1,0 +1,45 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: infra
+  namespace: argocd
+spec:
+  generators:
+    - git:
+        repoURL: git@github.com:lucidworks-managed-fusion/[[.CustomerName]]-config.git
+        revision: main
+        directories:
+          - path: [[.ClusterType]]/infra
+  template:
+    metadata:
+      name: '{{ path.basename }}'
+    spec:
+      project: default
+      source:
+        repoURL: git@github.com:lucidworks-managed-fusion/[[.CustomerName]]-config.git
+        targetRevision: main
+        path: '{{ path }}'
+        helm:
+          releaseName: [[.CustomerName]]-infra
+          valueFiles:
+            - global-values.yaml
+            - cadvisor-values.yaml
+            - customer-grafana-values.yaml
+            - internal-grafana-values.yaml
+            - prometheus-alerts-values.yaml
+            - prometheus-values.yaml
+            - velero-values.yaml
+            - trickster-values.yaml
+            - cert-manager-values.yaml
+      destination:
+        name: in-cluster
+        namespace: infra
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - PrunePropagationPolicy=foreground
+          - ApplyOutOfSyncOnly=true
+          - PruneLast=true

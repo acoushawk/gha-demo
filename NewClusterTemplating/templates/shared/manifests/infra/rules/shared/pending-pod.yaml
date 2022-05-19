@@ -1,0 +1,15 @@
+groups:
+  - name: pending.pods
+    rules:
+      - alert: KuberentesPendingPod
+        expr: sum by(kubernetes_node, namespace, pod)(kube_pod_status_phase{phase=~"Pending", namespace!="kube-system"}!=0)
+        for: 2h
+        labels:
+          severity: s2
+          env: '{{ $labels.kubernetes_namespace }}'
+          customer: '[[.CustomerName]]'
+          cluster: '[[.ClusterName]]'
+          object: '{{ $labels.pod }}'
+        annotations:
+          description: 'Customer: [[.CustomerName]] Env: {{ $labels.kubernetes_namespace }} Pod: {{ $labels.pod }} has been in a Pending state for longer than 2 hours'
+          summary: '[[.CustomerName]] {{ $labels.kubernetes_namespace }} has been in a Pending state for longer than 2 hours'

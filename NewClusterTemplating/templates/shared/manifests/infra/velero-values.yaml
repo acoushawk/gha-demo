@@ -1,0 +1,59 @@
+velero:
+  initContainers:
+    - name: velero-plugin-for-[[.CloudProvider]]
+      image: velero/velero-plugin-for-[[.CloudProvider]]:v1.3.0
+      imagePullPolicy: IfNotPresent
+      volumeMounts:
+        - mountPath: /target
+          name: plugins
+  nodeSelector:
+    fusion_node_type: infra
+  securityContext:
+    fsGroup: 1337
+  metrics:
+    enabled: true
+    scrapeInterval: 30s
+    # Pod annotations for Prometheus
+    podAnnotations:
+      prometheus.io/scrape: "true"
+      prometheus.io/port: "8085"
+      prometheus.io/path: "/metrics"
+    serviceMonitor:
+      enabled: false
+      additionalLabels: {}
+  installCRDs: true
+  configuration:
+    provider: [[.CloudProvider]]
+    backupStorageLocation:
+      name: default
+      provider: [[.CloudProvider]]
+      bucket: lw-managed-fusion-velero-backups
+      prefix: [[.ClusterName]]
+      config:
+        [[if (eq .CloudProvider "gcp") -]]
+        serviceAccount: velero@managed-fusion.iam.gserviceaccount.com    
+        [[- end]]
+    volumeSnapshotLocation:
+      name: default
+      provider: [[.CloudProvider]]
+      config:     
+    backupSyncPeriod: 1m
+    resticTimeout: 1h
+    restoreResourcePriorities: namespaces,persistentvolumes,persistentvolumeclaims,secrets,configmaps,serviceaccounts,limitranges,pods
+    restoreOnlyMode: false
+  rbac:
+    create: true
+    clusterAdministrator: true
+  serviceAccount:
+    server:
+      create: true
+      name:
+      annotations:
+  credentials:
+    useSecret: false
+  backupsEnabled: true
+  snapshotsEnabled: true
+  deployRestic: false
+  restic:
+    podVolumePath: /var/lib/kubelet/pods
+    privileged: false

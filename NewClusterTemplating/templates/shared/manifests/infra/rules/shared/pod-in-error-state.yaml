@@ -1,0 +1,29 @@
+groups:
+  - name: PodInErrorOrOOMkilledState 
+    rules:
+      - alert: KuberentesPodInError|OOMkilledState 
+        expr: sum by (namespace, pod)(kube_pod_container_status_terminated_reason{reason=~"Error|OOMKilled|Evicted"}!=0)
+        for: 45m
+        labels:
+          severity: s3
+          env: '{{ $labels.kubernetes_namespace }}'
+          customer: '[[.CustomerName]]'
+          cluster: '[[.ClusterName]]'
+          object: '{{ $labels.pod }}'
+        annotations:
+          description: 'Customer: [[.CustomerName]] Env: {{ $labels.kubernetes_namespace }} Pod: {{ $labels.pod }} has been in an Error or OOMkilled state for longer than 45 minutes'
+          summary: '[[.CustomerName]] {{ $labels.kubernetes_namespace }} has been in an Error or OOMkilled state for longer than 45 minutes'
+  - name: LogForwarderNotRunningState
+    rules:
+      - alert: LogForwarderInError
+        expr: sum by (namespace,pod)(kube_pod_container_status_running{container=~"^fusion-log.*"} == 0)
+        for: 30m
+        labels:
+          severity: s2
+          env: '{{ $labels.namespace }}'
+          customer: '[[.CustomerName]]'
+          cluster: '[[.ClusterName]]'
+          object: '{{ $labels.pod }}'
+        annotations:
+          description: 'Customer: [[.CustomerName]] Env: {{ $labels.namespace }} Pod: {{ $labels.pod }} has been in an Error state for longer than 30 minutes'
+          summary: '[[.CustomerName]] {{ $labels.namespace }} LogForwarder has been in an Error state longer than 30 minutes'

@@ -1,0 +1,31 @@
+groups:
+  - name: gateway.errors
+    rules:
+      - alert: ErrorRate1Pct
+        expr: |
+          ((sum(rate(nginx_ingress_controller_requests{controller_pod=~".*",controller_class=~".*",namespace=~".*",ingress=~".+api-gateway",status=~"[4-5].*"}[1m])) by (ingress, namespace) / 
+          sum(rate(nginx_ingress_controller_requests{controller_pod=~".*",controller_class=~".*",namespace=~".*",ingress=~".+api-gateway"}[1m])) by (ingress, namespace))
+          * 100) > 2
+        for: 5m
+        labels:
+          severity: s2
+          env: '{{ $labels.namespace }}'
+          customer: '[[.CustomerName]]'
+          cluster: '[[.ClusterName]]'
+        annotations:
+          description: 'Customer: [[.CustomerName]] Env: {{ $labels.namespace }} is encountering a high level of 4xx and 5xx errors (current error rate is: {{ humanize $value}}%)'
+          summary: '[[.CustomerName]] {{ $labels.namespace }}: Gateway High Error Rate'
+      - alert: ErrorRate
+        expr: |
+          ((sum(rate(nginx_ingress_controller_requests{controller_pod=~".*",controller_class=~".*",namespace=~".*",ingress=~".+api-gateway",status=~"[4-5].*"}[1m])) by (ingress, namespace) / 
+          sum(rate(nginx_ingress_controller_requests{controller_pod=~".*",controller_class=~".*",namespace=~".*",ingress=~".+api-gateway"}[1m])) by (ingress, namespace))
+          * 100) > 10
+        for: 5m
+        labels:
+          severity: s1
+          env: '{{ $labels.namespace }}'
+          customer: '[[.CustomerName]]'
+          cluster: '[[.ClusterName]]'
+        annotations:
+          description: 'Customer: [[.CustomerName]] Env: {{ $labels.namespace }} is encountering a high level of 4xx and 5xx errors (current error rate is: {{ humanize $value}}%)'
+          summary: '[[.CustomerName]] {{ $labels.namespace }}: Gateway High Error Rate'

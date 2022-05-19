@@ -1,0 +1,36 @@
+  
+apiVersion: velero.io/v1
+kind: Schedule
+metadata:
+  name: zookeeper-[[.Namespace]]
+  namespace: infra
+spec:
+  schedule: "0 0 * * *"
+  template:
+    ttl: "240h"
+    includedNamespaces:
+      - "[[.Namespace]]"
+    labelSelector: 
+      matchExpressions: 
+      - key: "app"
+        operator: "In"
+        values:
+          - "zookeeper"
+---
+apiVersion: velero.io/v1
+kind: Schedule
+metadata:
+  name: solr-[[.Namespace]]
+  namespace: infra
+spec:
+  schedule: "0 0 * * *"
+  template:
+    ttl: "240h"
+    includedNamespaces:
+      - "[[.Namespace]]"
+    labelSelector: 
+      matchExpressions: 
+      - key: "app.kubernetes.io/name"
+        operator: "In"
+        values:
+          - "solr"

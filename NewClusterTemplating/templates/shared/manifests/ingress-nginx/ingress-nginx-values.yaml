@@ -1,0 +1,61 @@
+ingress-nginx:
+  rbac:
+    create: true
+  controller:
+    service:
+      externalTrafficPolicy: Local
+    admissionWebhooks:
+      enabled: false
+    defaultBackend:
+      resources:
+        requests:
+          cpu: "50m"
+          memory: "100Mi"
+        limits:
+          cpu: "100m"
+          memory: "1000Mi"
+      useComponentLabel: true
+    metrics:
+      enabled: true
+      service:
+        annotations:
+          prometheus.io/scrape: "true"
+          prometheus.io/port: "10254"
+        servicePort: 9913
+        type: ClusterIP
+    autoscaling:
+      enabled: true
+      minReplicas: 3
+      maxReplicas: 15
+      targetCPUUtilizationPercentage: "80"
+      targetMemoryUtilizationPercentage: "80"
+    publishService:
+      enabled: true
+      pathOverride: "default/ingress-nginx-controller"
+    resources:
+      requests:
+        cpu: "3000m"
+        memory: "4000Mi"
+      limits:
+        cpu: "3000m"
+        memory: "4000Mi"
+    nodeSelector:
+      fusion_node_type: "default"
+    updateStrategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxUnavailable: 1
+    extraVolumeMounts:
+      - name: lua-scripts
+        mountPath: "/etc/nginx/lua/plugins/cve2021-44228/main.lua"
+        subPath: "cve2021-44228.lua"
+    extraVolumes:
+      - name: lua-scripts
+        configMap:
+          name: lua-scripts
+    config:
+      ssl-ciphers: "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:DHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA:ECDHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES256-SHA256:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:DES-CBC3-SHA"
+      ssl-protocols: "TLSv1.2 TLSv1.3"
+      plugins: "cve2021-44228"
+      server-snippet: |
+        lua_need_request_body on;

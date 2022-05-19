@@ -1,0 +1,55 @@
+prometheus:
+  alertmanager:
+    enabled: false
+    configFromSecret: 'prometheus-alertmanager'
+    configFileName: 'alertmanager-config.yaml'
+    nodeSelector:
+      fusion_node_type: infra
+  kubeStateMetrics:
+    enabled: true
+    nodeSelector:
+      fusion_node_type: infra
+  nodeExporter:
+    enabled: true
+  pushgateway:
+    nodeSelector:
+      fusion_node_type: infra
+    enabled: true
+  server:
+    nodeSelector:
+      fusion_node_type: infra
+    replicaCount: 3
+    statefulSet:
+      enabled: true
+    persistentVolume:
+      size: 300Gi
+    retention: 2w
+    global:
+      scrape_interval: 15s
+      scrape_timeout: 10s
+    extraConfigmapMounts:
+      - name: alertmanager-rules
+        mountPath: /etc/config/alerts
+        configMap: alertmanager-rules
+        readOnly: true
+  serverFiles:
+    prometheus.yml:
+      rule_files:
+        - /etc/config/rules/*.yaml
+        - /etc/config/alerts/*.yaml
+  configmapReload:
+    extraConfigmapMounts:
+      - name: alertmanager-rules
+        mountPath: /etc/alerts
+        configMap: alertmanager-rules
+        readOnly: true
+    extraVolumeDirs:
+      - /etc/alerts
+  extraScrapeConfigs: |
+    - job_name: ingress-nginx
+      metrics_path: /metrics
+      static_configs:
+        - targets:
+          - nginx-ingress-ingress-nginx-controller:80
+          - nginx-ingress-ingress-nginx-controller-metrics:9913
+          - nginx-ingress-ingress-nginx-controller-stats:18080

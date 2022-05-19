@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Secret
+type: kubernetes.io/dockerconfigjson
+metadata:
+  name: artifactory
+data:
+  .dockerconfigjson: eyJhdXRocyI6eyJmdXNpb24tZGV2LWRvY2tlci5jaS1hcnRpZmFjdG9yeS5sdWNpZHdvcmtzLmNvbSI6eyJ1c2VybmFtZSI6Im1mLWNvbmZpZy1zeW5jIiwicGFzc3dvcmQiOiJELjZHXHUwMDI2blkheTN0WTQ6YzkiLCJlbWFpbCI6Im1mLWNvbmZpZy1zeW5jIiwiYXV0aCI6ImJXWXRZMjl1Wm1sbkxYTjVibU02UkM0MlJ5WnVXU0Y1TTNSWk5EcGpPUT09In19fQ==

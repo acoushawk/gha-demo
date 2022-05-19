@@ -1,0 +1,99 @@
+fusion:  
+  admin-ui:
+    replicaCount: 2
+
+  auth-ui:
+    replicaCount: 2
+
+  classic-rest-service:
+    replicaCount: 1
+
+  devops-ui:
+    replicaCount: 1
+
+  fusion-admin:
+    replicaCount: 2
+
+  insights:
+    replicaCount: 2
+    autoscaling:
+      enabled: false
+      minReplicas: 2
+      maxReplicas: 3
+      metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            targetAverageUtilization: 70
+
+  job-launcher:
+    replicaCount: 1
+
+  job-rest-server:
+    replicaCount: 1
+    autoscaling:
+      enabled: false
+      minReplicas: 2
+      maxReplicas: 3
+      metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            targetAverageUtilization: 70
+
+  ml-model-service:
+    replicaCount: 1
+    autoscaling:
+      enabled: false
+      minReplicas: 2
+      maxReplicas: 6
+      metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            targetAverageUtilization: 70
+
+  connectors:
+    replicaCount: 1
+    autoscaling:
+      enabled: false
+      minReplicas: 2
+      maxReplicas: 3
+      metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            targetAverageUtilization: 70
+
+  connectors-backend:
+    replicaCount: 1
+    autoscaling:
+      enabled: false
+      minReplicas: 2
+      maxReplicas: 4
+      metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            targetAverageUtilization: 70
+
+  rules-ui:
+    replicaCount: 2
+
+  pm-ui:
+    replicaCount: 2
+
+  sql-service:
+    replicaCount: 0
+
+  webapps:
+    replicaCount: 1
+    autoscaling:
+      enabled: false
+      minReplicas: 2
+      maxReplicas: 3
+      metrics:
+        - type: Resource
+          resource:
+            name: cpu
+            targetAverageUtilization: 70

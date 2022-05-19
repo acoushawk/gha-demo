@@ -1,0 +1,149 @@
+name: "[[.ClusterName]]"
+region: "[[.Region]]"
+project_id: "[[.ProjectID]]"
+cluster_labels:
+  customer: "[[.CustomerName]]"
+  environment: "[[.ClusterType]]"
+node_pools:
+  - name: default
+    machine_type: [[.MachineType]]
+    min_count: 1
+    max_count: 3
+    node_metadata: GKE_METADATA_SERVER
+    [[- if (eq .ProjectID "managed-fusion-dev")]]
+    preemptible: true
+    [[- end]]
+    [[- if (eq .ClusterSize "small")]]
+    node_locations: "[[.Region]]-a,[[.Region]]-b"
+    [[- end]]
+  - name: infra
+    machine_type: [[.MachineType]]
+    min_count: 1
+    max_count: 2
+    node_metadata: EXPOSE
+    [[- if (eq .ProjectID "managed-fusion-dev")]]
+    preemptible: true
+    [[- end]]
+    [[- if (eq .ClusterSize "small")]]
+    node_locations: "[[.Region]]-a,[[.Region]]-b"
+    [[- end]]
+  [[if HasPrefix .ClusterType "non-prod" -]]
+  - name: dev
+    machine_type: [[.MachineType]]
+    min_count: 1
+    max_count: 2
+    node_metadata: EXPOSE
+    [[- if (eq .ProjectID "managed-fusion-dev")]]
+    preemptible: true
+    [[- end]]
+    [[- if (eq .ClusterSize "small")]]
+    node_locations: "[[.Region]]-a,[[.Region]]-b"
+    [[- end]]
+  # - name: stg-analytics
+  #   machine_type: [[.MachineType]]
+  #   min_count: 1
+  #   max_count: 2
+  #   node_metadata: EXPOSE
+  [[- if (eq .ProjectID "managed-fusion-dev")]]
+  #   preemptible: true
+  [[- end]]
+  [[- if (eq .ClusterSize "small")]]
+  #   node_locations: "[[.Region]]-a,[[.Region]]-b"
+  [[- end]]
+  # - name: stg-query
+  #   machine_type: [[.MachineType]]
+  #   min_count: 1
+  #   max_count: 2
+  #   node_metadata: EXPOSE
+  [[- if (eq .ProjectID "managed-fusion-dev")]]
+  #   preemptible: true
+  [[- end]]
+  [[- if (eq .ClusterSize "small")]]
+  #   node_locations: "[[.Region]]-a,[[.Region]]-b"
+  [[- end]]
+  # - name: stg-search
+  #   machine_type: [[.MachineType]]
+  #   min_count: 1
+  #   max_count: 2
+  #   node_metadata: EXPOSE
+  [[- if (eq .ProjectID "managed-fusion-dev")]]
+  #   preemptible: true
+  [[- end]]
+  [[- if (eq .ClusterSize "small")]]
+  #   node_locations: "[[.Region]]-a,[[.Region]]-b"
+  [[- end]]
+  # - name: stg-system
+  #   machine_type: [[.MachineType]]
+  #   min_count: 1
+  #   max_count: 2
+  #   node_metadata: EXPOSE
+  [[- if (eq .ProjectID "managed-fusion-dev")]]
+  #   preemptible: true
+  [[- end]]
+  [[- if (eq .ClusterSize "small")]]
+  #   node_locations: "[[.Region]]-a,[[.Region]]-b"
+  [[- end]]
+  - name: spark-only
+    machine_type: [[.MachineType]]
+    min_count: 0
+    max_count: 2
+    node_metadata: EXPOSE
+    preemptible: true
+  [[- if (eq .ClusterSize "small")]]
+    node_locations: "[[.Region]]-a,[[.Region]]-b"
+  [[- end]]
+  [[- else if HasPrefix .ClusterType "prod" -]]
+  - name: prd-analytics
+    machine_type: [[.MachineType]]
+    min_count: 1
+    max_count: 2
+    node_metadata: EXPOSE
+    [[- if (eq .ProjectID "managed-fusion-dev")]]
+    preemptible: true
+    [[- end]]
+    [[- if (eq .ClusterSize "small")]]
+    node_locations: "[[.Region]]-a,[[.Region]]-b"
+    [[- end]]
+  - name: prd-query
+    machine_type: [[.MachineType]]
+    min_count: 1
+    max_count: 2
+    node_metadata: EXPOSE
+    [[- if (eq .ProjectID "managed-fusion-dev")]]
+    preemptible: true
+    [[- end]]
+    [[- if (eq .ClusterSize "small")]]
+    node_locations: "[[.Region]]-a,[[.Region]]-b"
+    [[- end]]
+  - name: prd-search
+    machine_type: [[.MachineType]]
+    min_count: 1
+    max_count: 2
+    node_metadata: EXPOSE
+    [[- if (eq .ProjectID "managed-fusion-dev")]]
+    preemptible: true
+    [[- end]]
+    [[- if (eq .ClusterSize "small")]]
+    node_locations: "[[.Region]]-a,[[.Region]]-b"
+    [[- end]]
+  - name: prd-system
+    machine_type: [[.MachineType]]
+    min_count: 1
+    max_count: 2
+    node_metadata: EXPOSE
+    [[- if (eq .ProjectID "managed-fusion-dev")]]
+    preemptible: true
+    [[- end]]
+    [[- if (eq .ClusterSize "small")]]
+    node_locations: "[[.Region]]-a,[[.Region]]-b"
+    [[- end]]
+  - name: spark-only
+    machine_type: [[.MachineType]]
+    min_count: 0
+    max_count: 2
+    node_metadata: EXPOSE
+    preemptible: true
+    [[- if (eq .ClusterSize "small")]]
+    node_locations: "[[.Region]]-a,[[.Region]]-b"
+    [[- end]]
+  [[- end]]

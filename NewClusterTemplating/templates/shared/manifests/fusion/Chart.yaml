@@ -1,0 +1,10 @@
+apiVersion: v2
+description: A Helm chart for installing Managed Fusion Services
+name: managed-fusion
+type: application
+version: 0.1.0
+appVersion: "[[.Version]]"
+dependencies:
+  - name: fusion
+    repository: https://charts.lucidworks.com
+    version: "[[.Version]]"

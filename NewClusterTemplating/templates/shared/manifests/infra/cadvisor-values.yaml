@@ -1,0 +1,14 @@
+cadvisor:
+  container:
+    additionalArgs:
+      - --housekeeping_interval=10s
+      - --max_housekeeping_interval=15s
+      - --event_storage_event_limit=default=0
+      - --event_storage_age_limit=default=0
+      - --disable_metrics=percpu,process,sched,tcp,udp
+      - --enable_load_reader=true
+      - --docker_only
+    resources:
+      limits:
+        cpu: 50m
+        memory: 50Mi

@@ -1,0 +1,27 @@
+groups:
+  - name: pulsar.error
+    rules:
+      - alert: Pulsar Backlog Quota quota is above 90%
+        expr: sum by (kubernetes_namespace, topic) (pulsar_storage_size) / sum by(kubernetes_namespace,topic)(pulsar_storage_backlog_quota_limit) * 100 > 90
+        for: 120m
+        labels:
+          severity: s2
+          env: '{{ $labels.kubernetes_namespace }}'
+          customer: '[[.CustomerName]]'
+          cluster: '[[.ClusterName]]'
+          object: '{{ $labels.topic }}'
+        annotations:
+          description: 'Customer: [[.CustomerName]] Env: {{ $labels.kubernetes_namespace }} Topic: {{ $labels.topic }} pulsar backlog quota usage is (current value is: {{ humanize $value}})'
+          summary: '[[.CustomerName]] {{ $labels.namespace }}: Pulsar backlog quota has exceeded 90% usage'
+      - alert: Pulsar Backlog Quota quota is above 80%
+        expr: sum by (kubernetes_namespace, topic) (pulsar_storage_size) / sum by(kubernetes_namespace,topic)(pulsar_storage_backlog_quota_limit) * 100 > 80
+        for: 180m
+        labels:
+          severity: s3
+          env: '{{ $labels.kubernetes_namespace }}'
+          customer: '[[.CustomerName]]'
+          cluster: '[[.ClusterName]]'
+          object: '{{ $labels.topic }}'
+        annotations:
+          description: 'Customer: [[.CustomerName]] Env: {{ $labels.kubernetes_namespace }} Topic: {{ $labels.topic }} pulsar backlog quota usage is (current value is: {{ humanize $value}})'
+          summary: '[[.CustomerName]] {{ $labels.namespace }}: Pulsar backlog quota has exceeded 80% usage'

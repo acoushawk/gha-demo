@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: config-sync-[[.Namespace]]
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: git@github.com:lucidworks-managed-fusion/config-sync-config.git
+    path: .
+    targetRevision: main
+    helm:
+      releaseName: [[.Namespace]]
+      values: |-
+        config-sync:
+          cfg:
+            github:
+              branch: "[[.CustomerName]]/[[.Namespace]]"
+  destination:
+    namespace: [[.Namespace]]
+    name: in-cluster
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - PrunePropagationPolicy=foreground
+      - ApplyOutOfSyncOnly=true
+      - PruneLast=true

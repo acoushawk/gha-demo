@@ -1,0 +1,16 @@
+groups:
+  - name: pipeline.latency
+    rules:
+      - alert: p95PipelineExecutionDuration
+        expr: histogram_quantile(0.95, sum by(pipelineId, kubernetes_namespace, kubernetes_pod_name, le)(rate(pipeline_execution_duration_secs_bucket{pipelineId!~"_lw_tmp.+",pipelineId!="_system",pipelineId!="_signals_ingest"}[1m]))) > 1
+        for: 5m
+        labels:
+          severity: s1
+          env: '{{ $labels.kubernetes_namespace }}'
+          pod: '{{ $labels.kubernetes_pod_name }}'
+          customer: '[[.CustomerName]]'
+          cluster: '[[.ClusterName]]'
+          object: '{{ $labels.pipelineId }}'
+        annotations:
+          description: 'Customer: [[.CustomerName]] Env: {{ $labels.namespace }} Pod: {{ $labels.name }} Pipeline: {{ $labels.pipelineId }} P95 execution is taking longer than 1 second'
+          summary: '[[.CustomerName]] {{ $labels.pipelineId }} P95 execution is taking longer than 1 second'

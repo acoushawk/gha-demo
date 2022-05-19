@@ -1,0 +1,52 @@
+customer-grafana:
+  server:
+    service:
+      type: ClusterIP
+  ingress:
+    enabled: true
+    annotations:
+      kubernetes.io/ingress.class: nginx
+    [[if HasPrefix .ClusterType "non-prod" -]]
+    hosts: ["[[.CustomerName]]-[[.ClusterType]]-dashboard.[[.Domain]]"]
+    [[- else -]]
+    hosts: ["[[.CustomerName]]-dashboard.[[.Domain]]"]
+    [[- end]]
+    tls:
+      - secretName: "infra-tls-secret"
+        [[if HasPrefix .ClusterType "non-prod" -]]
+        hosts: ["[[.CustomerName]]-[[.ClusterType]]-dashboard.[[.Domain]]"]
+        [[- else -]]
+        hosts: ["[[.CustomerName]]-dashboard.[[.Domain]]"]
+        [[- end]]
+  nodeSelector:
+    fusion_node_type: infra
+  persistence:
+    enabled: true
+    type: pvc
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+      - name: Prometheus
+        type: prometheus
+        url: "http://{{ .Release.Name }}-trickster:8480"
+        access: proxy
+        editable: false
+        basicAuth: false
+        isDefault: true
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+      - name: 'default'
+        orgId: 1
+        folder: ''
+        type: file
+        disableDeletion: true
+        editable: false
+        options:
+          path: /var/lib/grafana/dashboards/default
+  dashboards:
+    default:
+      dashboard_customer:
+        url: https://raw.githubusercontent.com/lucidworks/managed-dashboards/master/customer-dashboard.json

@@ -1,0 +1,53 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: [[.Namespace]]
+  namespace: argocd
+spec:
+  generators:
+    - git:
+        repoURL: git@github.com:lucidworks-managed-fusion/[[.CustomerName]]-config.git
+        revision: main
+        directories:
+          - path: [[.ClusterType]]/[[.Namespace]]
+  template:
+    metadata:
+      name: '{{ path.basename }}'
+    spec:
+      project: default
+      source:
+        repoURL: git@github.com:lucidworks-managed-fusion/[[.CustomerName]]-config.git
+        targetRevision: main
+        path: '{{ path }}'
+        helm:
+          releaseName: [[.Namespace]]
+          valueFiles:
+            - global-values.yaml
+            - fusion-affinity-values.yaml
+            - fusion-ingress-values.yaml
+            - fusion-replicas-values.yaml
+            - fusion-resources-values.yaml
+            - fusion-solr-values.yaml
+            - fusion-values.yaml
+            - customer-setup-values.yaml
+      destination:
+        name: in-cluster
+        namespace: [[.Namespace]]
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - PrunePropagationPolicy=foreground
+          - ApplyOutOfSyncOnly=true
+          - PruneLast=true
+          - RespectIgnoreDifferences=true
+      ignoreDifferences:
+        - group: apiextensions.k8s.io
+          kind: CustomResourceDefinition
+          name: seldondeployments.machinelearning.seldon.io
+          jsonPointers:
+            - /spec
+            - /status
+            - /metadata/labels

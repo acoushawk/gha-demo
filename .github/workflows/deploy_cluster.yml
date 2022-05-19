@@ -1,0 +1,70 @@
+name: Deploy Cluster
+
+on:
+  workflow_dispatch:
+    inputs:
+      customer:
+        description: 'Customer Name'
+        required: true
+        type: string
+      cluster_type:
+        description: 'Cluster Type'
+        required: true
+        options:
+        - non-prod
+        - prod
+        default: 'non-prod'
+        type: choice
+      cluster_size:
+        description: 'Cluster Size'
+        required: true
+        options:
+        - small
+        - large
+        default: 'small'
+        type: choice
+      project_id:
+        description: 'Project ID'
+        required: true
+        options:
+        - managed-fusion
+        - managed-fusion-dev
+        default: 'managed-fusion'
+        type: choice
+      region:
+        description: 'Region'
+        required: true
+        options:
+        - us-west1
+        - us-east1
+        - us-central1
+        - europe-west1
+        - eurote-east1
+        - southamerica-west1
+        - southamerica-east1
+        type: choice
+
+
+defaults:
+  run:
+    working-directory: NewClusterTemplating
+
+jobs:
+  build_files:
+    name: "Build manifest files"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-go@v3
+        with:
+          go-version: '^1.13.1' # The Go version to download (if necessary) and use.
+      - run: go run main.go cluster gke --customerName=${{ github.event.inputs.customer }} --projectId=${{ github.event.inputs.project_id }} --region=${{ github.event.inputs.region }}  --clusterType=${{ github.event.inputs.cluster_type }} --clusterSize=${{ github.event.inputs.cluster_size }}
+    
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v4
+        with:
+          title: ${{ github.event.inputs.customer }} - ${{ github.event.inputs.cluster_type }} ${{ github.event.inputs.cluster_size }}
+          branch: ${{ github.event.inputs.customer }}/${{ github.event.inputs.cluster_type }}/${{ github.event.inputs.cluster_size }}
+          delete-branch: true
+          body: |
+            New Cluster for ${{ github.event.inputs.customer }}

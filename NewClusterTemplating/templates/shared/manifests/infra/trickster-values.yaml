@@ -1,0 +1,57 @@
+trickster:
+  frontend:
+    # listenAddress defines the ip on which Trickster's Front-end HTTP Proxy server listens.
+    # empty by default, listening on all interfaces
+    listenAddress: ""
+
+    # tlsListenAddress defines the ip on which Trickster's Front-end TLS Proxy server listens.
+    # empty by default, listening on all interfaces
+    tlsListenAddress: ""
+
+    # tlsListenPort defines the port on which Trickster's Front-end TLS Proxy server listens.
+    # The default is 0, which means TLS is not used, even if certificates are configured below.
+    tlsListenPort: ""
+
+    # connectionsLimit defines the maximum number of concurrent connections
+    # Trickster's Proxy server may handle at any time. 0 (default) means unlimited.
+    connectionsLimit: "0"
+
+  # Configuration options for mapping Origin(s)
+  origins:
+    - name: default
+      originType: prometheus
+      originURL: "http://[[.CustomerName]]-infra-prometheus-server"
+    - name: alerts
+      originType: prometheus
+      originURL: "http://[[.CustomerName]]-infra-prometheus-alerts-server"
+
+  ## Annotations to be added to trickster pods
+  ##
+  podAnnotations:
+    fluentd.active: "true"
+  # Number of trickster replicas desired
+  ## Use a StatefulSet if replicaCount needs to be greater than 1 (see below)
+  [[- if (eq .ClusterSize "large")]]
+  replicaCount: 3
+  [[- else]]
+  replicaCount: 2
+  [[- end]]
+  # caches:
+  #   - name: default
+  #     # cacheType defines what kind of cache Trickster uses
+  #     # options are 'bbolt', 'badger', 'filesystem', 'memory', and 'redis'
+  cacheType: memory
+  ## trickster resource requests and limits
+  ## Ref: http://kubernetes.io/docs/user-guide/compute-resources/
+  ##
+  [[- if (eq .ClusterSize "large")]]
+  resources:
+    limits:
+      cpu: 6
+      memory: 12Gi
+    requests:
+      cpu: 4
+      memory: 8Gi
+  [[- end]]
+  nodeSelector:
+    fusion_node_type: infra

@@ -1,0 +1,6 @@
+global:
+  customerName: "[[.CustomerName]]"
+  clusterName: "[[.ClusterName]]"
+  clusterType: "[[.ClusterType]]"
+  domain: "[[.Domain]]"
+  tlsName: "infra-tls-secret"

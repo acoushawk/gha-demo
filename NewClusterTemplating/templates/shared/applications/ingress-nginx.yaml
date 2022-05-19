@@ -1,0 +1,36 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: ingress-nginx
+  namespace: argocd
+spec:
+  generators:
+    - git:
+        repoURL: git@github.com:lucidworks-managed-fusion/[[.CustomerName]]-config.git
+        revision: main
+        directories:
+          - path: [[.ClusterType]]/ingress-nginx
+  template:
+    metadata:
+      name: '{{ path.basename }}'
+    spec:
+      project: default
+      source:
+        repoURL: git@github.com:lucidworks-managed-fusion/[[.CustomerName]]-config.git
+        targetRevision: main
+        path: '{{ path }}'
+        helm:
+          valueFiles:
+            - ingress-nginx-values.yaml
+      destination:
+        name: in-cluster
+        namespace: default
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - PrunePropagationPolicy=foreground
+          - ApplyOutOfSyncOnly=true
+          - PruneLast=true

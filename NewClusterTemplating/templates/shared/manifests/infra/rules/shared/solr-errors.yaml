@@ -1,0 +1,48 @@
+groups:
+  - name: solr.errors
+    rules:
+      - alert: ErrorRate
+        expr: sum(rate(solr_metrics_core_server_errors_total[5m])) by (collection, kubernetes_namespace, base_url) > 1
+        for: 5m
+        labels:
+          severity: s1
+          env: '{{ $labels.kubernetes_namespace }}'
+          customer: '[[.CustomerName]]'
+          cluster: '[[.ClusterName]]'
+          object: '{{ $labels.persistentvolumeclaim }}'
+        annotations:
+          description: 'Customer: [[.CustomerName]] Env: {{ $labels.kubernetes_namespace }} Route: {{ $labels.routeId }} is encountering a high level of errors (current value is: {{ humanize $value}} error per second)'
+          summary: '[[.CustomerName]] {{ $labels.kubernetes_namespace }}: Gateway High Error Rate'
+      - alert: SolrCollectionRepicaOffline
+        expr: sum by(collection,kubernetes_namespace)(solr_collections_replica_state == 0)
+        for: 60m
+        labels:
+          severity: s3
+          env: '{{ $labels.kubernetes_namespace }}'
+          customer: '[[.CustomerName]]'
+          cluster: '[[.ClusterName]]'
+        annotations:
+          description: 'Customer: [[.CustomerName]] Env: {{ $labels.kubernetes_namespace }} a shard replica of {{ $labels.collection }} collection is offline!)'
+          summary: '[[.CustomerName]] {{ $labels.kubernetes_namespace }}: shard replica is offline!'
+      - alert: SolrCollectionShardOffline
+        expr: sum by(collection,kubernetes_namespace)(solr_collections_shard_state == 0)
+        for: 30m
+        labels:
+          severity: s2
+          env: '{{ $labels.kubernetes_namespace }}'
+          customer: '[[.CustomerName]]'
+          cluster: '[[.ClusterName]]'
+        annotations:
+          description: 'Customer: [[.CustomerName]] Env: {{ $labels.kubernetes_namespace }} a shard of {{ $labels.collection }} collection is offline!)'
+          summary: '[[.CustomerName]] {{ $labels.kubernetes_namespace }}: shard is offline!'
+      - alert: SolrExporterDown
+        expr: sum by(namespace)(kube_pod_container_status_running{container='exporter'} == 0)
+        for: 30m
+        labels:
+          severity: s2
+          env: '{{ $labels.kubernetes_namespace }}'
+          customer: '[[.CustomerName]]'
+          cluster: '[[.ClusterName]]'
+        annotations:
+          description: 'Customer: [[.CustomerName]] Env: {{ $labels.kubernetes_namespace }} solr exporter is down'
+          summary: '[[.CustomerName]] {{ $labels.kubernetes_namespace }}: solr exporter down!'            

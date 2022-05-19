@@ -1,0 +1,109 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: lua-scripts
+data:
+  # Thanks to infiniroot - script based on their work
+  cve2021-44228.lua: |
+    local ngx = ngx
+    local _M = {}
+
+    function url_decode(str)
+      str = string.gsub (str, "+", " ")
+      str = string.gsub (str, "%%(%x%x)",
+      function(h) return string.char(tonumber(h,16)) end)
+      str = string.gsub (str, "\r\n", "\n")
+      return str
+    end
+
+    function decode_jndi(str)
+      local s = tostring(str)
+      s=url_decode(s)
+      s=string.gsub(s, "${lower:(%a+)}", "%1")
+      s=string.gsub(s, "${upper:(%a+)}", "%1")
+      s=string.gsub(s, "${env:[%a_-]+:%-([%a:])}", "%1")
+      s=string.gsub(s, "${::%-(%a+)}", "%1")
+      return s
+    end
+
+    function _M.rewrite()
+      local ua = ngx.var.http_user_agent
+      local req_headers = "Headers: ";
+      local req_params = "";
+      local h, err = ngx.req.get_headers()
+      for k, v in pairs(h) do
+        req_headers = req_headers .. k .. ": " .. tostring(v) .. "\n";
+        -- ngx.log(ngx.ERR, 'Header check ' .. k .. ':' .. v)
+        if v and v ~= nil then
+          local s=decode_jndi(v)
+          -- ngx.log(ngx.ERR, 'Test - s data ' .. string.lower(s) )
+          if string.match(string.lower(s), "{jndi:") then
+            ngx.log(ngx.ERR, 'Found potential log4j attack in header ' .. k .. ':' .. tostring(v))
+            ngx.exit(ngx.HTTP_ILLEGAL)
+          end
+        else
+          if err then
+            ngx.log(ngx.ERR, "error: ", err)
+            return
+          end
+        end
+      end
+
+
+      local h, err = ngx.req.get_uri_args()
+      for k, v in pairs(h) do
+        req_params = req_params .. k .. ": " .. tostring(v) .. "\n";
+        -- ngx.log(ngx.ERR, 'Params check ' .. k .. ':' .. v)
+        if v and v ~= nil then
+          local s=decode_jndi(v)
+          -- ngx.log(ngx.ERR, 'Test - s data ' .. string.lower(s) )
+          if string.match(string.lower(s), "{jndi:") then
+            ngx.log(ngx.ERR, 'Found potential log4j attack in get args ' .. k .. ':' .. tostring(v))
+            ngx.exit(ngx.HTTP_ILLEGAL)
+          end
+        else
+          if err then
+            ngx.log(ngx.ERR, "error: ", err)
+            return
+          end
+        end
+      end
+
+      ngx.req.read_body()
+      local request_body = ngx.req.get_body_data()
+      -- ngx.log(ngx.ERR, 'Body 2 ' .. request_body)
+      -- ngx.log(ngx.ERR, 'Body 2 ' .. string.find(request_body, "jndi"))
+
+      if request_body and v ~= request_body then
+        local s=decode_jndi(request_body)
+        -- ngx.log(ngx.ERR, 'Test - s data ' .. string.lower(s) )
+        if string.match(string.lower(s), "{jndi:") then
+          ngx.log(ngx.ERR, 'Found potential log4j attack in body ' .. request_body)
+          ngx.exit(ngx.HTTP_ILLEGAL)
+        end
+      end
+
+      local h, err = ngx.req.get_post_args()
+      for k, v in pairs(h) do
+        req_params = req_params .. k .. ": " .. tostring(v) .. "\n";
+        -- ngx.log(ngx.ERR, 'Post Params check ' .. k .. ':' .. tostring(v))
+        if v and v ~= nil then
+            local s=decode_jndi(v)
+            -- ngx.log(ngx.ERR, 'Test - s data ' .. string.lower(s) )
+            if string.match(string.lower(s), "{jndi:") then
+              ngx.log(ngx.ERR, 'Found potential log4j attack in post args ' .. k .. ':' .. tostring(v))
+              ngx.exit(ngx.HTTP_ILLEGAL)
+            end
+        else
+          if err then
+            ngx.log(ngx.ERR, "error: ", err)
+            return
+          end
+        end
+      end
+
+    end
+
+    return _M
+
+#the plugin have to be activated through nginx-configuration cm

@@ -1,0 +1,7 @@
+cluster_name: "lw-bbqoutlet-non-prod"
+cluster_type: "non-prod"
+region: "us-west1"
+project_id: "managed-fusion"
+repo_name: "bbqoutlet-config"
+argocd_host: "bbqoutlet-non-prod-argocd.b.lucidworks.cloud"
+argocd_host_tls_name: "bbqoutlet-non-prod-argocd-b-lucidworks-cloud"

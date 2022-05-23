@@ -78,7 +78,7 @@ jobs:
               "customer": "${{ github.event.inputs.customer }}",
               "cluster_size": "${{ github.event.inputs.cluster_size }}",
               "cluster_type": "${{ github.event.inputs.cluster_type }}",
-              "cluster_region": "${{ github.event.inputs.cluster_region }}",
+              "cluster_region": "${{ github.event.inputs.region }}",
               "pr_url": "${{ steps.cpr.outputs.pull-request-url }}"
             }
         env:

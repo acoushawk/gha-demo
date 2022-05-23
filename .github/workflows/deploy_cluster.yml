@@ -62,9 +62,24 @@ jobs:
     
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v4
+        id: cpr
         with:
           title: ${{ github.event.inputs.customer }} - ${{ github.event.inputs.cluster_type }} ${{ github.event.inputs.cluster_size }}
           branch: ${{ github.event.inputs.customer }}/${{ github.event.inputs.cluster_type }}/${{ github.event.inputs.cluster_size }}
           delete-branch: true
           body: |
             New Cluster for ${{ github.event.inputs.customer }}
+      - name: Send message to slack
+        id: slack
+        uses: slackapi/slack-github-action@v1.19.0
+        with:
+          payload: |
+            {
+              "customer": "${{ github.event.inputs.customer }}",
+              "cluster_size": "${{ github.event.inputs.cluster_size }}",
+              "cluster_type": "${{ github.event.inputs.cluster_type }}",
+              "cluster_region": "${{ github.event.inputs.cluster_region }}",
+              "pr_url": "${{ steps.cpr.outputs.pull-request-url }}"
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
